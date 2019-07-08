@@ -14,16 +14,16 @@ class PostModel extends BaseModel
 		],
 
 		'name' => [
-			'type' => 'string',
+			'type' => Validator::STRING,
 			'length' => [1, 50],
 			'unique' => true,
 			'not_blank' => true,
-			'primary' => true
+			'require' => true
 		],
 
 		'content' => [
-			'type' => 'string',
-			'length' => 'text',
+			'type' => Validator::STRING,
+			'length' => Validator::TEXT,
 			'not_blank' => true,
 			'require' => true
 		],

@@ -27,6 +27,9 @@ switch ($controller) {
 	case 'home':
 		$controller = 'Home';
 		break;
+	case 'user':
+		$controller = 'User';
+		break;
 	default:
 		throw new core\Exception\ErrorNotFoundException();
 		break;
@@ -40,6 +43,17 @@ if (isset($uriParts[1]) && is_numeric($uriParts[1])) {
 }
 
 $action = isset($uriParts[1]) && $uriParts[1] !== '' && is_string($uriParts[1]) ? $uriParts[1] : 'index';
+
+$actionParts = explode('-', $action);
+for ($i = 1; $i < count($actionParts); $i++) {
+	if (!isset($actionParts[$i])) {
+		continue;
+	}
+
+	$actionParts[$i] = ucfirst($actionParts[$i]);
+}
+
+$action = implode('', $actionParts);
 $action = sprintf('%sAction', $action);
 
 if(!$id) {
