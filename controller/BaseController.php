@@ -34,14 +34,14 @@ class BaseController
       );
   }
 
-  public function errrorHandler($message, $trace)
+  public function errorHandler($message, $trace)
   {
     $this->title = 'Error';
     $this->content = $this->template(
       'Error', 'error', 
       [
-        'message' => $this->message,
-        'trace' => $this->trace
+        'message' => $message,
+        'trace' => $trace
       ]
     );
   }
@@ -59,5 +59,10 @@ class BaseController
     header('HTTP/1.0 403 Forbidden');
     header("Location: " . ROOT);
     exit();
+  }
+
+  protected function transfer(array $errors)
+  {
+    return implode("<br>", $errors);
   }
 }

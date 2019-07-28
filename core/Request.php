@@ -11,16 +11,16 @@ class Request
   private $post;
   private $server;
   private $cookie;
-  private $file;
+  private $files;
   private $session;
 
-  public function __construct($get, $post, $server, $cookie, $file, $session)
+  public function __construct($get, $post, $server, $cookie, $files, $session)
   {
     $this->get = $get;
     $this->post = $post;
     $this->server = $server;
     $this->cookie = $cookie;
-    $this->file = $file;
+    $this->files = $files;
     $this->session = $session;
   }
 
@@ -32,6 +32,11 @@ class Request
   public function post($key = null)
   {
     return $this->request($this->post, $key);
+  }
+
+  public function session($key = null)
+  {
+    return $this->request($this->session, $key);
   }
 
   public function isGet()

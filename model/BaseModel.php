@@ -44,7 +44,7 @@ abstract class BaseModel
 			
 			if (!$this->validator->success) {
 				throw new ModelException($this->validator->errors);
-				$this->validator->errors;
+				//$this->validator->errors;
 			}
 			$params = $this->validator->clean;
 		}

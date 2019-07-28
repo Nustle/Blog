@@ -4,5 +4,8 @@
 	Контент<br>
 	<textarea name="content"><?=$content?></textarea><br>
 	<input type="submit" value="Добавить">
-</form> <hr>
+</form> <br>
+<div>
+	<?=$errors?>
+</div> <hr>
 <a href="<?ROOT?>index/">Назад</a> <br>

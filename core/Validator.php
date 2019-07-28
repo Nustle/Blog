@@ -7,7 +7,7 @@ use core\Exception\ValidatorException;
 class Validator
 {
   const STRING = 'string';
-  const INT = 'integer';
+  const INT = 'int';
   const TEXT = 'text';
 
   public $clean = [];
@@ -46,7 +46,7 @@ class Validator
 
       if (empty($this->errors[$name])) {
         if (isset($this->rules['type']) && $this->rules['type'] === self::STRING) {
-            $this->clean[$name] = htmlspecialchars(trim($fields[$name]));
+            $this->clean[$name] = trim(htmlspecialchars($fields[$name]));
         } elseif (isset($this->rules['type']) && $this->rules['type'] === self::INT) {
             $this->clean[$name] = (int)$fields[$name];
         } else {
@@ -56,13 +56,8 @@ class Validator
     }
 
     if (empty($this->errors)) {
-      $success = true;
+      $this->success = true;
     }
-  }
-
-  public function setRules(array $rules)
-  {
-    $this->rules = $rules;
   }
 
   public function isTypeMatch($field, $type)
@@ -118,9 +113,14 @@ class Validator
     return mb_strlen($field) > $length === false;
   }
 
-  public function isBlank($field)
+  private function isBlank($field)
   {
     $field = trim($field);
     return $field === null || $field === '';
+  }
+
+  public function setRules(array $rules)
+  {
+    $this->rules = $rules;
   }
 }

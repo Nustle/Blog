@@ -37,8 +37,7 @@ class UserModel extends BaseModel
   public function signUp(array $fields)
   {
     $this->validator->execute($fields);
-    /*var_dump($this->validator->clean);
-    exit();*/
+
     if (!$this->validator->success) {
       throw new UserException($this->validator->errors);
     }
@@ -49,6 +48,35 @@ class UserModel extends BaseModel
         'password' => $this->getHash($this->validator->clean['password'])
       ]
     );
+  }
+
+  public function signIn(array $fields)
+  {
+    $this->validator->execute($fields);
+
+    if (!$this->validator->success) {
+      throw new UserException($this->validator->errors);
+    }
+
+    return $this->add(
+      [
+        'login' => $this->validator->clean['login'],
+        'password' => $this->getHash($this->validator->clean['password'])
+      ]
+    );
+  }
+
+  public function getByLogin($login)
+  {
+    $sql = sprintf('SELECT * FROM %s WHERE login = :login', $this->table);
+    return $this->db->select($sql, ['login' => $login], DBDriver::FETCH_ONE);
+  }
+
+  public function getBySid($sid)
+  {
+    $sql = sprintf('SELECT users.id as id, login, password FROM sessions JOIN %s ON sessions.id_user = users.id WHERE sessions.sid = :sid', $this->table);
+
+    return $this->db->select($sql, ['sid' => $sid], DBDriver::FETCH_ONE); 
   }
  
   public function getHash($password)

@@ -1,4 +1,4 @@
-<form method="POST">
+<form method="post">
   <p>
     <input type="text" name="login" placeholder="Введите логин">
   </p>
@@ -6,13 +6,14 @@
     <input type="password" name="password" placeholder="Введите пароль">
   </p>
   <p>
-    <input type="password" name="reply_password" placeholder="Повторите пароль">
+    <input type="submit" value="Войти">
   </p>
   <p>
-    <input type="submit" value="Отправить">
+    <input type="checkbox" name="remember">
+    Запомнить
   </p>
-</form> <br>
+</form>
 <div>
   <?=$errors?>
-</div> <br>
-<?=$trouble?>
+</div> <hr>
+<a href="<?=ROOT?>user/sign-up">Зарегистрироваться</a>

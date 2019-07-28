@@ -7,6 +7,7 @@ use core\DBconnector;
 use core\DBDriver;
 use core\Validator;
 use core\Exception\ModelException;
+//use core\Exception\ValidatorException;
 
 class HomeController extends BaseController
 {
@@ -47,6 +48,7 @@ class HomeController extends BaseController
   public function addAction()
   {
     $this->title = 'Добавление статьи';
+    $errors = [];
 
     if ($this->request->isPost()) {
       $mPost = new PostModel(
@@ -64,7 +66,7 @@ class HomeController extends BaseController
         
         $this->redirect();
       } catch (ModelException $e) {
-          $e->getErrors();
+          $errors = $e->getErrors();
       }
     }
 
@@ -72,7 +74,8 @@ class HomeController extends BaseController
       'Add', 'add',
       [
         'name' => $this->request->post('name'),
-        'content' => $this->request->post('content')
+        'content' => $this->request->post('content'),
+        'errors' => $this->transfer($errors)
       ]
     );
   }

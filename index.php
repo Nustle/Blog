@@ -79,7 +79,7 @@ $controller->$action();
 
 } catch (\Exception $e) {
 		$controller = sprintf('controller\%sController', 'Base');
-		$controller = new $controller($request);
+		$controller = new $controller();
 		$controller->errorHandler($e->getMessage(), $e->getTraceAsString());
 }
 

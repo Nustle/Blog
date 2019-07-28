@@ -7,7 +7,6 @@ use core\Validator;
 
 class PostModel extends BaseModel
 {
-	protected $validator;
 	protected $schema = [
 		'id' => [
 			'primary' => true
