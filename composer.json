@@ -1,0 +1,18 @@
+{
+    "name": "hustle/blog",
+    "description": "PHP project",
+    "authors": [
+        {
+            "name": "Hustle",
+            "email": "Hustle.adik69@yandex.ru"
+        }
+    ],
+    "require": {
+        "symfony/dotenv": "^4.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Blog\\": "src/"
+        }
+    }
+}

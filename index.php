@@ -1,16 +1,13 @@
 <?php
 
-use core\DBconnector;
-use model\PostModel;
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Blog\Core\Request;
 
 session_start();
 
 const ROOT = '/PHP Дмитрий Лаврик/Level_three/blog/';
 $error404 = false;
-
-function __autoload($classname) {
-	include_once __DIR__ . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $classname) . '.php';
-}
 
 $uri = $_SERVER['REQUEST_URI'];
 
@@ -64,21 +61,15 @@ if($id) {
 	$_GET['id'] = $id;
 }
 
-//var_dump($uriParts);
+$request = new Request($_GET, $_POST, $_SERVER, $_COOKIE, $_FILES, $_SESSION);
 
-$request = new core\Request($_GET, $_POST, $_SERVER, $_COOKIE, $_FILES, $_SESSION);
-/*echo "<pre>";
-var_dump($request);
-echo "</pre>";
-die;*/
-
-$controller = sprintf('controller\%sController', $controller);
+$controller = sprintf('Blog\Controller\%sController', $controller);
 
 $controller = new $controller($request);
 $controller->$action();
 
-} catch (\Exception $e) {
-		$controller = sprintf('controller\%sController', 'Base');
+} catch (Exception $e) {
+		$controller = sprintf('Blog\Controller\%sController', 'Base');
 		$controller = new $controller();
 		$controller->errorHandler($e->getMessage(), $e->getTraceAsString());
 }
