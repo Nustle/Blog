@@ -13,24 +13,28 @@ class SignUp extends Form
         'name' => 'login',
         'type' => 'text',
         'placeholder' => 'Введите логин',
-        'class' => 'class-class'
+        'class' => 'class-class',
+        'tag' => 'input'
       ],
 
       [
         'name' => 'password',
         'type' => 'password',
-        'placeholder' => 'Введите пароль'
+        'placeholder' => 'Введите пароль',
+        'tag' => 'input'
       ],
 
       [
         'name' => 'password-reply',
         'type' => 'password',
-        'placeholder' => 'Повторите пароль'
+        'placeholder' => 'Повторите пароль',
+        'tag' => 'input'
       ],
 
       [
         'type' => 'submit',
-        'value' => 'Отправить'
+        'value' => 'Отправить',
+        'tag' => 'input'
       ],
 
     ];

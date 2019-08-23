@@ -85,7 +85,6 @@ class Validator
     }
   }
 
-
   public function lengthInRange($str, array $range)
   {
     $maxMatch = $range[1] === self::TEXT ? true : strlen($str) <= (int)$range[1];

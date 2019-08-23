@@ -2,19 +2,11 @@
 
 namespace Blog\Controller;
 
-use Blog\Core\User;
-use Blog\Models\UserModel;
-use Blog\Models\SessionModel;
 use Blog\Core\Exception\ValidatorException;
-use Blog\Core\DBconnector;
-use Blog\Core\DBDriver;
-use Blog\Core\Validator;
 use Blog\Forms\SignUp;
 use Blog\Forms\SignIn;
 use Blog\Core\Forms\FormBuilder;
-use Blog\Core\HandyBox\HandyBoxContainer;
-use Blog\Box\UserBox;
-use Blog\Box\ModelFactory;
+use Blog\Core\Http\Cookie;
 
 class UserController extends BaseController
 {
@@ -25,23 +17,18 @@ class UserController extends BaseController
     $form = new SignUp();
     $formBuilder = new FormBuilder($form);
 
-    $container = new HandyBoxContainer();
-    /*var_dump($container);
-    die;*/
+    $session = $this->container->get('http.session');
 
     if ($this->request->isPost()) {
-      $container->register(new ModelFactory());
-      $container->fabricate('factory.model', 'User');
 
-      $container->register(new ModelFactory());
-      $container->fabricate('factory.model', 'Session');
-
-      $container->register(new UserBox());
-      $user = $container->get('user');
+      $user = $this->container->get('user');
 
       try {
         $user->signUp($form->handleRequest($this->request));
-        $this->redirect();
+
+        $this->response
+          ->redirect(ROOT)
+          ->send();
       } catch (ValidatorException $e) {
         $form->addErrors($e->getErrors());
       }
@@ -58,21 +45,22 @@ class UserController extends BaseController
     $formBuilder = new FormBuilder($form);
 
     if ($this->request->isPost()) {
-      $mUser = new UserModel(
-        new DBDriver(DBConnector::getConnect()),
-        new Validator()
-      );
-
-      $mSession = new SessionModel(
-        new DBDriver(DBConnector::getConnect()),
-        new Validator()
-      );
-
-      $user = new User($mUser, $mSession);
+      
+      $user = $this->container->get('user');
+      $handled = $form->handleRequest($this->request);
 
       try {
-        $user->signIn($form->handleRequest($this->request));
-        $this->redirect();
+        $user->signIn($handled);
+
+        $this->response
+          ->redirect(ROOT)
+          ->send();
+
+        if (isset($handled['remember'])) {
+          $session = $this->container->get('http.session');
+          $cookie = new Cookie('sid', $session->collection()->get('sid'), strtotime('+30 days', time()));
+          $this->response->setCookie($cookie);
+        }
       } catch (ValidatorException $e) {
         $form->addErrors($e->getErrors());
       }

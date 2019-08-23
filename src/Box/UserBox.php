@@ -13,7 +13,9 @@ class UserBox implements HandyBoxInterface
     $container->service('user', function () use ($container) {
       return new User(
         $container->fabricate('factory.model', 'User'),
-        $container->fabricate('factory.model', 'Session')
+        $container->fabricate('factory.model', 'Session'),
+        $container->fabricate('factory.model', 'Role'),
+        $container->get('http.session')
       );
     });
   }

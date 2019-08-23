@@ -17,12 +17,13 @@ class DBconnector
 	
 	public static function getPDO()
 	{
-			$dsn = sprintf('%s:host=%s;dbname=%s', 'mysql', 'localhost', 'blog');
-			$opt = [
-				\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
-			];
+		$opt = [
+			\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+			\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+		];
 
-			return new \PDO($dsn, 'root', '6946ekopro', $opt);
+		$dsn = sprintf('%s:host=%s;dbname=%s', 'mysql', getenv('DB_HOST'), getenv('DB_NAME'));
+		
+		return new \PDO($dsn, getenv('DB_USER'), getenv('DB_PASSWORD'), $opt);
 	}
 }

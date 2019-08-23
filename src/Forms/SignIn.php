@@ -13,24 +13,28 @@ class SignIn extends Form
         'name' => 'login',
         'type' => 'text',
         'placeholder' => 'Введите логин',
-        'class' => 'class-class'
+        'class' => 'class-class',
+        'tag' => 'input'
       ],
 
       [
         'name' => 'password',
         'type' => 'password',
-        'placeholder' => 'Введите пароль'
+        'placeholder' => 'Введите пароль',
+        'tag' => 'input'
       ],
 
       [
         'name' => 'remember',
         'type' => 'checkbox',
-        'label' => ['text' => 'Запомнить меня']
+        'label' => ['text' => 'Запомнить меня'],
+        'tag' => 'input'
       ],
 
       [
         'type' => 'submit',
-        'value' => 'Войти'
+        'value' => 'Войти',
+        'tag' => 'input'
       ],
 
     ];

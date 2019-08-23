@@ -42,29 +42,21 @@ class DBDriver
     return $this->pdo->lastInsertId();
   }
 
-  public function update($table, array $params, array $where)
+  public function update($table, array $params, $where)
   {
-    $column = [];
     $param = [];
-
+    
     foreach ($params as $k => $v) {
-      $column[] = "$k = :$k";
-    }
-
-    foreach ($where as $k => $v) {
       $param[] = "$k = :$k";
     }
 
-    $columns = sprintf('%s', implode(', ', $column));
-    $condition = sprintf('%s', implode(', ', $param));
-    $merge = array_merge($params, $where);
-
-    $sql = sprintf('UPDATE %s SET %s WHERE %s', $table, $columns, $condition);
+    $set = sprintf('%s', implode(', ', $param));
+    $sql = sprintf('UPDATE %s SET %s WHERE %s', $table, $set, $where);
 
     $stmt = $this->pdo->prepare($sql);
-    $stmt->execute($merge);
+    $stmt->execute($params);
 
-    return $this->pdo->lastInsertId();
+    return $stmt->rowCount();
   }
 
   public function delete($table, array $where)

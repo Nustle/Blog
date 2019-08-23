@@ -15,7 +15,7 @@ class FormBuilder
   {
     $method = $this->form->getMethod();
 
-    if (null === $method) {
+    if ($method === null) {
       $method = 'GET';
     }
 
@@ -25,9 +25,12 @@ class FormBuilder
   public function fields()
   {
     foreach ($this->form->getFields() as $field) {
-      $attributes = [];
-
-      $inputs[] = $this->input($field);
+    
+      if ($field['tag'] === 'input') {
+        $inputs[] = $this->input($field);
+      } else {
+        $inputs[] = $this->textarea($field);
+      }
     }
 
     return $inputs;
@@ -39,12 +42,7 @@ class FormBuilder
     $label = null;
 
     if (isset($attributes['errors'])) {
-      $class = $attributes['class'] ?? '';
-      $attributes['class'] = trim(sprintf('%s error', $class));
-      $errors = $attributes['errors'];
-
-      unset($attributes['errors']);
-      $errors = '<div>' . implode('</div><div>', $errors) . '</div>';
+      $errors = $this->getErrors($attributes);
     }
 
     if (isset($attributes['label'])) {
@@ -61,6 +59,29 @@ class FormBuilder
     return $input;
   }
 
+  public function textarea(array $attributes)
+  {
+    $errors = '';
+    $label = null;
+
+    if (isset($attributes['errors'])) {
+      $errors = $this->getErrors($attributes);
+    }
+
+    if (isset($attributes['label'])) {
+      $label = $attributes['label'];
+      unset($attributes['label']);
+    }
+
+    $textarea = sprintf('<textarea %s></textarea>%s', $this->buildAttributes($attributes), $errors);
+
+    if ($label) {
+      $textarea = sprintf('<label>%s%s</label>', $textarea, $label['text']);
+    }
+
+    return $textarea;
+  }
+
   public function inputSign()
   {
     return $this->input([
@@ -72,11 +93,26 @@ class FormBuilder
 
   private function buildAttributes(array $attributes)
   {
+    if (isset($attributes['tag'])) {
+      unset($attributes['tag']);
+    }
+
     $arr = [];
     foreach ($attributes as $attribute => $value) {
       $arr[] = sprintf('%s="%s"', $attribute, $value);
     }
 
     return implode(' ', $arr);
+  }
+
+  private function getErrors(array &$attributes)
+  {
+    $class = $attributes['class'] ?? '';
+    $attributes['class'] = trim(sprintf('%s error', $class));
+    $errors = $attributes['errors'];
+
+    unset($attributes['errors']);
+
+    return '<div>' . implode('</div><div>', $errors) . '</div>';
   }
 }

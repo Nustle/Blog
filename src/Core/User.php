@@ -4,27 +4,50 @@ namespace Blog\Core;
 
 use Blog\Models\UserModel;
 use Blog\Models\SessionModel;
-use Blog\Core\Request;
+use Blog\Models\RoleModel;
+use Blog\Core\Http\Session;
+use Blog\Core\Http\Request;
 use Blog\Core\Exception\ValidatorException;
+use Blog\Core\Exception\UnauthorizedException;
 
 class User
 {
   private $mUser;
   private $mSession;
+  private $mRole;
+  private $session;
 
-  public function __construct(UserModel $mUser, SessionModel $mSession)
+  public $current = null;
+
+  public function __construct(UserModel $mUser, SessionModel $mSession, RoleModel $mRole, Session $session)
   {
     $this->mUser = $mUser;
     $this->mSession = $mSession;
+    $this->mRole = $mRole;
+    $this->session = $session;
   }
 
   public function signUp(array $fields)
   {
     if (!$this->comparePass($fields)) {
-      return false;
+      $errors = [
+        'password' => ['The fields do not match'],
+        'password-reply' => ['The fields do not match']
+      ];
+
+      throw new ValidatorException($errors);
     }
     
     $this->mUser->signUp($fields);
+
+    // Возможно код ниже нужно убрать или подебажить
+    $user = $this->mUser->getByLogin(htmlspecialchars(trim($fields['login'])));
+    $id = $user['id'];
+
+    $this->mSession->set($this->mSession->getSid(), $id);
+    $this->session->collection()->set('sid', $this->mSession->getSid());
+
+    return $id;
   }
 
   public function signIn(array $fields)
@@ -32,39 +55,62 @@ class User
     $user = $this->mUser->getByLogin(htmlspecialchars(trim($fields['login'])));
 
     if (!$user) {
-      throw new ValidatorException("User with login $user not found");
+      throw new UnauthorizedException('Wrong login or password');
     }
 
-    $matched = $this->mUser->getHash($fields['password']) === $user['password'];
-    
-    if (!$matched) {
-      throw new ValidatorException('Access denied!');
+    if ($this->mUser->getHash($fields['password']) !== $user['password']) {
+      throw new UnauthorizedException('Wrong login or password');
     }
 
-    $isAuth = $this->isAuth();
+    $isUpd = false;
 
-    if (!$isAuth) {
-      throw new ValidatorException('You are not registrated user, please do this');
+    if ($sid = $this->session->collection()->get('sid', false)) {
+      $isUpd = $this->mSession->update($sid);
     }
 
-    if (isset($fields['remember'])) {
-      setcookie('login', hash('sha256', $user), time() + 3600 * 24 * 365, '/');
-      setcookie('password', hash('sha256', $matched), time() + 3600 * 24 * 365, '/');
+    if (!$isUpd) {
+      $this->mSession->set($this->mSession->getSid(), $user['id']);
+      $this->session->collection()->set('sid', $this->mSession->getSid());
     }
-
-    // Открываем обе сессии
 
     return true;
   }
 
-  public function isAuth(Request $request = null)
+  public function isAuth(Request $request)
   {
-    // Нужно выдернуть пользователя из БД по SID
-    if ($request->session('sid') && $this->mSession->getBySid('sid')) {
-      $user = $this->mUser->getBySid('sid');
-    } 
+    if ($this->current) {
+      return true;
+    }
 
+    if ($sid = $this->session->collection()->get('sid')) {
+      $this->current = $this->mUser->getBySid($sid);
+    }
 
+    if ($this->current) {
+      $this->mSession->update($sid);
+
+      return true;
+    }
+
+    if ($sid = $request->cookie()->get('sid')) {
+      $this->mSession->set($sid, $this->current['id']); // Нужно откуда-то взять этот $idUser, пока вообще 0 всего на уме, 
+      // мб поставить в SessionModel $idUser по умолчанию null
+
+      $this->session->collection()->set('sid', $sid);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  public function checkAccess(string $priv)
+  {
+    if (!$this->current) {
+      return false;
+    }
+
+    return $this->mRole->checkPriv($priv, $this->current['id']);
   }
 
   private function comparePass($fields)

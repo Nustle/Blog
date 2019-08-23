@@ -2,23 +2,27 @@
 
 namespace Blog\Controller;
 
-use Blog\Models\PostModel;
-use Blog\Core\DBconnector;
-use Blog\Core\DBDriver;
-use Blog\Core\Validator;
-use Blog\Core\Exception\ModelException;
-//use Blog\Core\Exception\ValidatorException;
+use Blog\Forms\Add;
+use Blog\Forms\Edit;
+use Blog\Forms\Delete;
+use Blog\Core\Exception\ValidatorException;
+use Blog\Core\Forms\FormBuilder;
 
 class HomeController extends BaseController
 {
   public function indexAction()
   {
-    $mPost = new PostModel(
-      new DBDriver(DBConnector::getConnect()),
-      new Validator()
-    );
+    $user = $this->container->get('user');
 
-    $posts = $mPost->getAll();
+    $access = $user->checkAccess('ADMIN_PANEL');
+
+    if (!$access) {
+      $this->response->redirect(ROOT);
+    }
+
+    $posts = $this->container
+      ->fabricate('factory.model', 'Post')
+      ->getAll();
 
     $this->content = $this->template('Home', 'home', ['posts' => $posts]);
   }
@@ -26,14 +30,11 @@ class HomeController extends BaseController
   public function postAction()
   {
     $this->title = 'Просмотр сообщения';
-    $id = $this->request->get('id');
+    $id = $this->request->get()->get('id');
 
-    $mPost = new PostModel(
-      new DBDriver(DBConnector::getConnect()),
-      new Validator()
-    );
-
-    $post = $mPost->getById($id);
+    $post = $this->container
+      ->fabricate('factory.model', 'Post')    
+      ->getById($id);
 
     $this->content = $this->template(
       'Post', 'post',
@@ -48,72 +49,57 @@ class HomeController extends BaseController
   public function addAction()
   {
     $this->title = 'Добавление статьи';
-    $errors = [];
+
+    $form = new Add();
+    $formBuilder = new FormBuilder($form);
 
     if ($this->request->isPost()) {
-      $mPost = new PostModel(
-        new DBDriver(DBConnector::getConnect()),
-        new Validator()
-      );
+      $post = $this->container->fabricate('factory.model', 'Post');
 
       try {
-        $post = $mPost->add(
-            [
-              'name' => $this->request->post('name'),
-              'content' => $this->request->post('content')
-            ]
-          );
+        $post->add(
+          [
+            'title' => $this->request->post()->get('title'), // Может быть $this->request->post->get('title), везде также по аналогии
+            'content' => $this->request->post()->get('content')
+          ]
+        );
         
-        $this->redirect();
-      } catch (ModelException $e) {
-          $errors = $e->getErrors();
+        $this->response->redirect(ROOT); // $this->redirect(ROOT);
+      } catch (ValidatorException $e) {
+          $form->addErrors($e->getErrors());
       }
     }
 
-    $this->content = $this->template(
-      'Add', 'add',
-      [
-        'name' => $this->request->post('name'),
-        'content' => $this->request->post('content'),
-        'errors' => $this->transfer($errors)
-      ]
-    );
+    $this->content = $this->template('Add', 'add', ['form' => $formBuilder]);
   }
 
   public function editAction()
   {
     $this->title = 'Изменение статьи';
 
+    $form = new Edit();
+    $formBuilder = new FormBuilder($form);
+
     if ($this->request->isPost()) {
-      $mPost = new PostModel(
-        new DBDriver(DBConnector::getConnect()),
-        new Validator()
-      );
+      $post = $this->container->fabricate('factory.model', 'Post');
 
       try {
-        $post = $mPost->edit(
+        $post->edit(
           [
-            'name' => $this->request->post('name'),
-            'content' => $this->request->post('content')
+            'name' => $this->request->post()->get('name'),
+            'content' => $this->request->post()->get('content')
           ],
-          
-          [
-            'name' => $this->request->post('name')
-          ]
+          sprintf('name="%"', $this->request->post()->get('name')) // Если что, в таком же стиле, только по id (ниже тоже касается, только name)
         );
 
-        $this->redirect();
-      } catch (ModelException $e) {
-          $e->getErrors();
+        $this->response->redirect(ROOT);
+      } catch (ValidatorException $e) {
+          $form->addErrors($e->getErrors());
       }
     }
 
     $this->content = $this->template(
-      'Edit','edit',
-      [
-        'name' => $this->request->post('name'),
-        'content' => $this->request->post('content')
-      ]
+      'Edit','edit', ['form' => $formBuilder]
     );
   }
 
@@ -121,30 +107,27 @@ class HomeController extends BaseController
   {
     $this->title = 'Удаление статьи';
 
+    $form = new Delete();
+    $formBuilder = new FormBuilder($form);
+
     if($this->request->isPost()){
-      $mPost = new PostModel(
-        new DBDriver(DBConnector::getConnect()),
-        new Validator()
-      );
+      $post = $this->container->fabricate('factory.model', 'Post');
 
       try {
-        $post = $mPost->delete(
+        $post->delete(
           [
-            'name' => $this->request->post('name')
+            'name' => $this->request->post()->get('name') 
           ]
         );
 
-        $this->redirect();
-      } catch (ModelException $e) {
-          $e->getErrors();
+        $this->response->redirect(ROOT);
+      } catch (ValidatorException $e) {
+        $form->addErrors($e->getErrors());
       }
     }
 
     $this->content = $this->template(
-      'Delete', 'delete', 
-      [
-        'name' => $this->request->post('name')
-      ]
+      'Delete', 'delete', ['form' => $formBuilder]
     );
   }
 }

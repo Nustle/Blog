@@ -4,7 +4,7 @@ namespace Blog\Models;
 
 use Blog\Core\DBDriver;
 use Blog\Core\Validator;
-use Blog\Core\Exception\ModelException;
+use Blog\Core\Exception\ValidatorException;
 
 abstract class BaseModel
 {
@@ -42,34 +42,32 @@ abstract class BaseModel
 
 	public function getByName($name)
 	{
-		$sql = sprintf('SELECT name FROM %s WHERE name = :name', $this->table);
+		$sql = sprintf('SELECT * FROM %s WHERE name = :name', $this->table);
 		return $this->db->select($sql, ['name' => $name], DBDriver::FETCH_ONE);
 	}
 
-	public function add(array $params, $needValidation = true)
+	public function add(array $params)
 	{
-		if ($needValidation) {
-			$this->validator->execute($params);
+		$this->validator->execute($params);
 			
-			if (!$this->validator->success) {
-				throw new ModelException($this->validator->errors);
-				$this->validator->errors;
-			}
-
-			$params = $this->validator->clean;
+		if (!$this->validator->success) {
+			throw new ValidatorException($this->validator->errors);
 		}
+
+		$params = $this->validator->clean;
 		
 		return $this->db->insert($this->table, $params);
 	}
 
-	public function edit(array $params, array $where)
+	public function edit(array $params, $where)
 	{
 		$this->validator->execute($params);
 
 		if (!$this->validator->success) {
-			throw new ModelException($this->validator->errors);
-			$this->validator->errors;
+			throw new ValidatorException($this->validator->errors);
 		}
+
+		$params = $this->validator->clean;
 
 		return $this->db->update($this->table, $params, $where);
 	}
@@ -77,8 +75,7 @@ abstract class BaseModel
 	public function delete(array $where)
 	{
 		if (!$this->validator->success) {
-			throw new ModelException($this->validator->errors);
-			$this->validator->errors;
+			throw new ValidatorException($this->validator->errors);
 		}
 
 		return $this->db->delete($this->table, $where);

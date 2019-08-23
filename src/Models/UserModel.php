@@ -50,22 +50,6 @@ class UserModel extends BaseModel
     );
   }
 
-  public function signIn(array $fields)
-  {
-    $this->validator->execute($fields);
-
-    if (!$this->validator->success) {
-      throw new UserException($this->validator->errors);
-    }
-
-    return $this->add(
-      [
-        'login' => $this->validator->clean['login'],
-        'password' => $this->getHash($this->validator->clean['password'])
-      ]
-    );
-  }
-
   public function getByLogin($login)
   {
     $sql = sprintf('SELECT * FROM %s WHERE login = :login', $this->table);
@@ -79,8 +63,8 @@ class UserModel extends BaseModel
               users.login,
               users.password,
               sessions.sid
-				    FROM users 
-				    JOIN sessions 
+				    FROM users
+				    JOIN sessions
 					    ON users.id = sessions.id_user 
 				    WHERE sessions.sid = :sid';
 

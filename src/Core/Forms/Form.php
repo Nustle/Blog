@@ -2,7 +2,7 @@
 
 namespace Blog\Core\Forms;
 
-use Blog\Core\Request;
+use Blog\Core\Http\Request;
 
 abstract class Form
 {
@@ -34,7 +34,6 @@ abstract class Form
   public function handleRequest(Request $request)
   {
     $fields = [];
-    $string = '';
 
     foreach ($this->getFields() as $key => $field) {
       if (!isset($field['name'])) {
@@ -43,18 +42,18 @@ abstract class Form
 
       $name = $field['name'];
 
-      if ($request->post($name) !== null) {
+      if ($request->post()->get($name) !== null) {
 
         if ($this->fields[$key]['type'] === 'checkbox') {
           $this->fields[$key]['checked'] = 'checked';
         }
 
-        $this->setAttribute($key, 'value', $request->post($name));
-        $fields[$name] = $request->post($name);
+        $this->setAttribute($key, 'value', $request->post()->get($name));
+        $fields[$name] = $request->post()->get($name);
       }
     }
 
-    if ($request->post('sign') !== null && $this->getSign() !== $request->post('sign')) {
+    if ($request->post()->get('sign') !== null && $this->getSign() !== $request->post()->get('sign')) {
       die('Формы не совпадают!');
     }
 
