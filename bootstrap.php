@@ -9,6 +9,8 @@ use Blog\Box\UserBox;
 use Blog\Box\SessionBox;
 use Blog\Application;
 
+const ROOT = 'blog/';
+
 $container = new HandyBoxContainer();
 $app = new Application($container);
 

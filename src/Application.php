@@ -80,7 +80,7 @@ class Application
     $action = implode('', $actionParts);
     $this->currentAction = sprintf('%sAction', $action);
 
-    if (null === $id) {
+    if ($id === null) {
       $id = isset($uriParts[2]) && is_numeric($uriParts[2]) ? $uriParts[2] : false;
     }
 
